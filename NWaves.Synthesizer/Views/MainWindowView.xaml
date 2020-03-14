@@ -3,13 +3,157 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         xmlns:local="clr-namespace:NWaves.Synthesizer"
+        xmlns:converters="clr-namespace:NWaves.Synthesizer.Converters"
         xmlns:cal="http://www.caliburnproject.org"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="NWaves.Synthesizer"
+        Height="420" Width="800"
         cal:Message.Attach="[Event KeyDown] = [Action OnKeyDown($eventArgs)];
                             [Event KeyUp] = [Action OnKeyUp($eventArgs)]">
-    <Grid>
-        <TextBlock x:Name="Note" Margin="20" FontSize="32" />
-    </Grid>
+    <Window.Background>
+        <LinearGradientBrush>
+            <GradientStop Color="#aaaabb" Offset="0" />
+            <GradientStop Color="#001122" Offset="1.15" />
+        </LinearGradientBrush>
+    </Window.Background>
+
+    <Window.Resources>
+        <sys:String x:Key="Octave">QWERTYUZXCVBNM</sys:String>
+        <sys:String x:Key="Octave#">23_567_SD_GHJ</sys:String>
+
+        <converters:WhiteKeyColorConverter x:Key="whiteKeyConverter" />
+        <converters:BlackKeyColorConverter x:Key="blackKeyConverter" />
+        
+    </Window.Resources>
+    
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,25,0,0">
+            <Button x:Name="OctaveDown"
+                    Content=" &lt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14" />
+            <TextBlock Text="Octave : " Foreground="White" FontSize="14" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            <TextBlock x:Name="Octave" Foreground="White" FontSize="14" Margin="0,0,10,0"/>
+            <Button x:Name="OctaveUp"
+                    Content=" &gt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14"/>
+            <TextBlock Width="50"/>
+            <Button x:Name="VolumeDown"
+                    Content=" &lt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14" />
+            <TextBlock Text="Volume : " Foreground="White" FontSize="14" Margin="10,0,0,0"/>
+            <TextBlock x:Name="Volume" Foreground="White" FontSize="14" Margin="0,0,10,0"/>
+            <Button x:Name="VolumeUp"
+                    Content=" &gt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14"/>
+        </StackPanel>
+        <Grid HorizontalAlignment="Center" Margin="0,20,0,0">
+            <StackPanel Margin="0,10,0,0">
+                <ItemsControl ItemsSource="{StaticResource Octave}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <DataTemplate.Resources>
+                                <Style TargetType="Label">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <MultiBinding Converter="{StaticResource whiteKeyConverter}">
+                                                <Binding Path="Content" RelativeSource="{RelativeSource Self}" />
+                                                <Binding Path="DataContext.Keys" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" />
+                                            </MultiBinding>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataTemplate.Resources>
+                            <Label Content="{Binding}"
+                                   HorizontalContentAlignment="Center"
+                                   VerticalContentAlignment="Bottom"
+                                   BorderBrush="Black"
+                                   BorderThickness="1"
+                                   Width="50"
+                                   Height="100"
+                                   FontSize="40" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <StackPanel Margin="25,9,0,0">
+                <ItemsControl ItemsSource="{StaticResource Octave#}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <DataTemplate.Resources>
+                                <Style TargetType="Label">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource Self}}" Value="_">
+                                            <Setter Property="Visibility" Value="Hidden" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <MultiBinding Converter="{StaticResource blackKeyConverter}">
+                                                <Binding Path="Content" RelativeSource="{RelativeSource Self}" />
+                                                <Binding Path="DataContext.Keys" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" />
+                                            </MultiBinding>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataTemplate.Resources>
+                            <Label Content="{Binding}"
+                                   HorizontalContentAlignment="Center"
+                                   Width="30"
+                                   Height="40"
+                                   Foreground="White"
+                                   BorderBrush="Black"
+                                   BorderThickness="1"
+                                   Margin="10,0,10,0"
+                                   FontSize="20" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Grid>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="50">
+            <Image Source="pack://application:,,,/Assets/organ.png"
+                   cal:Message.Attach="[Event MouseLeftButtonDown] = [Action Organ()]"
+                   Margin="5,0,0,0"
+                   Height="40"
+                   Cursor="Hand" />
+            <Image Source="pack://application:,,,/Assets/guitar.png"
+                   cal:Message.Attach="[Event MouseLeftButtonDown] = [Action Guitar()]"
+                   Margin="10,0,70,0"
+                   Height="35"
+                   Cursor="Hand" />
+            <TextBlock x:Name="Sound" VerticalAlignment="Center" Foreground="White" />
+            <Image x:Name="SelectedInstrument"
+                   Margin="15,0,20,0"
+                   Height="100" />
+        </StackPanel>
+    </StackPanel>
 </Window>

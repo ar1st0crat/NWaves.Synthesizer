@@ -1,4 +1,5 @@
 ﻿using NWaves.Signals.Builders;
+using NWaves.Synthesizer.Config;
 using NWaves.Synthesizer.Interfaces;
 using NWaves.Synthesizer.Utils;
 using NWaves.Utils;
@@ -7,53 +8,68 @@ namespace NWaves.Synthesizer.Services
 {
     public class SynthesizerService : ISynthesizerService
     {
-        private readonly AudioService _audioService;
+        private readonly IAudioService _audioService;
+        private readonly SynthesizerConfig _config;
+        private readonly int _sampleRate;
 
-        public int SampleRate { get; set; } = 8000;
-        public int OctaveDelta { get; set; } = +1;
+        private Instrument _instrument = Instrument.Organ;
 
-
-        public SynthesizerService()
+        public SynthesizerService(IAudioService audioService, SynthesizerConfig config)
         {
-            _audioService = new AudioService(SampleRate);
+            _config = config;
+            _audioService = audioService;
+            _sampleRate = audioService.WaveFormat.SampleRate;
             _audioService.Play();
         }
 
         public void PlayNote(string note, int octave)
         {
-            octave += OctaveDelta;
-
-            if (_audioService.Notes.Contains(note + octave))
+            if (_audioService.IsPlayingNote(note + octave))
             {
                 return;
             }
 
             var freq = Scale.NoteToFreq(note, octave);
 
-            //var sound = new FadeInOutBuilder(
-            //                new KarplusStrongBuilder()
-            //                    .SetParameter("freq", freq)
-            //                    .SetParameter("stretch", 2 * freq / 80)
-            //                    .OfLength(SampleRate * 2)
-            //                    .SampledAt(SampleRate));
+            FadeInOutBuilder sound;
 
-            var sound = new FadeInOutBuilder(
-                            new PadSynthBuilder()
-                                .SetParameter("fftsize", 1024 * 16)
-                                .SetParameter("freq", freq)
-                                .SetAmplitudes(new[] { 25, 70, 10, 20, 5, 80, 0, 55, 1, 3, 0f })
-                                .OfLength(SampleRate * 3)
-                                .SampledAt(SampleRate));
+            switch (_instrument)
+            {
+                case Instrument.Guitar:
+                    sound = new FadeInOutBuilder(
+                                    new KarplusStrongBuilder()
+                                        .SetParameter("freq", freq)
+                                        .SetParameter("stretch", freq / _config.StretchFactor)
+                                        .OfLength(_sampleRate * _config.Seconds)
+                                        .SampledAt(_sampleRate));
+                    break;
+                default:
+                    sound = new FadeInOutBuilder(
+                                    new PadSynthBuilder()
+                                        .SetParameter("fftsize", _config.FftSize)
+                                        .SetParameter("freq", freq)
+                                        .SetAmplitudes(_config.Amplitudes)
+                                        .OfLength(_sampleRate * _config.Seconds)
+                                        .SampledAt(_sampleRate));
+                    break;
+            }
 
-            _audioService.Volume = 1f;
-            _audioService.AddNote(note + octave, sound);
+            _audioService.AddSound(note + octave, sound);
         }
 
         public void StopNote(string note, int octave)
         {
-            octave += OctaveDelta;
+            _audioService.RemoveSound(note + octave);
+        }
 
-            _audioService.RemoveNote(note + octave);
+        public void ChangeInstrument(Instrument instrument)
+        {
+            _instrument = instrument;
+        }
+
+        public void ChangeVolume(float volume)
+        {
+            _audioService.Volume = volume;
         }
     }
 }

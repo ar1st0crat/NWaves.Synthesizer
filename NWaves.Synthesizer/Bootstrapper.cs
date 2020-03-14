@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using NWaves.Synthesizer.Config;
 using NWaves.Synthesizer.Interfaces;
 using NWaves.Synthesizer.Services;
 using NWaves.Synthesizer.ViewModels;
@@ -28,7 +29,9 @@ namespace NWaves.Synthesizer
             _container
                 .PerRequest<IAudioService, AudioService>()
                 .PerRequest<IKeyNoteMapperService, KeyNoteMapperService>()
-                .PerRequest<ISynthesizerService, SynthesizerService>();
+                .PerRequest<ISynthesizerService, SynthesizerService>()
+                .Singleton<AudioConfig>()
+                .Singleton<SynthesizerConfig>();
 
             _container
                .PerRequest<MainWindowViewModel>();

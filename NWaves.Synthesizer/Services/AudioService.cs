@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using NWaves.Synthesizer.Config;
 using NWaves.Synthesizer.Interfaces;
 using NWaves.Synthesizer.Utils;
 using System;
@@ -11,43 +12,44 @@ namespace NWaves.Synthesizer.Services
     {
         private readonly WaveOut _waveOut;
 
-        private readonly List<FadeInOutBuilder> _synthesizers = new List<FadeInOutBuilder>();
+        private readonly List<FadeInOutBuilder> _sounds = new List<FadeInOutBuilder>();
+        private readonly List<string> _notes = new List<string>();
 
         public WaveFormat WaveFormat { get; private set; }
 
-        public float Volume { get; set; } = 0.5f;
-
-        public List<string> Notes { get; set; } = new List<string>();
+        public float Volume { get; set; }
 
 
-        public AudioService(int sampleRate = 16000, int channels = 1)
+        public AudioService(AudioConfig config)
         {
-            WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channels);
+            WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(config.SampleRate, config.Channels);
+            
+            Volume = config.Volume;
 
             _waveOut = new WaveOut { DesiredLatency = 70 };
             _waveOut.Init(this);
         }
 
-        public void AddNote(string note, FadeInOutBuilder synthesizer)
+        public void AddSound(string note, FadeInOutBuilder sound)
         {
-            Notes.Add(note);
-            _synthesizers.Add(synthesizer);
+            _notes.Add(note);
+            _sounds.Add(sound);
         }
 
-        public void RemoveNote(string note)
+        public void RemoveSound(string note)
         {
-            var index = Notes.IndexOf(note);
+            var index = _notes.IndexOf(note);
 
             if (index < 0) return;
 
-            _synthesizers[index].FadeOut();
+            _sounds[index].FadeOut();
         }
 
         public int Read(float[] buffer, int offset, int sampleCount)
         {
             var channels = WaveFormat.Channels;
 
-            if (!_synthesizers.Any())
+            if (!_sounds.Any())
             {
                 Array.Clear(buffer, 0, buffer.Length);
                 return sampleCount;
@@ -55,15 +57,15 @@ namespace NWaves.Synthesizer.Services
 
             for (var n = 0; n < sampleCount; n += channels)
             {
-                int index = _synthesizers.FindIndex(s => s.Finished);   // finished fading...
+                int index = _sounds.FindIndex(s => s.Finished);   // finished fading...
 
                 if (index >= 0)
                 {
-                    _synthesizers.RemoveAt(index);
-                    Notes.RemoveAt(index);
+                    _sounds.RemoveAt(index);
+                    _notes.RemoveAt(index);
                 }
 
-                var sample = _synthesizers.Any() ? _synthesizers.Select(s => s.NextSample()).Sum() * Volume : 0;
+                var sample = _sounds.Any() ? _sounds.Select(s => s.NextSample()).Sum() * Volume : 0;
 
                 for (var i = 0; i < channels; i++)
                 {
@@ -74,11 +76,9 @@ namespace NWaves.Synthesizer.Services
             return sampleCount;
         }
 
+        public bool IsPlayingNote(string note) => _notes.Contains(note);
+
         public void Play() => _waveOut?.Play();
-
-        public void Pause() => _waveOut.Pause();
-
-        public void Resume() => _waveOut.Resume();
 
         public void Stop() => _waveOut?.Stop();
 

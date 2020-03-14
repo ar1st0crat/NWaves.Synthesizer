@@ -4,12 +4,31 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon />
+    <Win32Resource />
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\guitar.png" />
+    <None Remove="Assets\organ.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\organ.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="3.2.0" />
     <PackageReference Include="NAudio" Version="1.10.0" />
     <PackageReference Include="NWaves" Version="0.9.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\guitar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

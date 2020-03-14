@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using NWaves.Synthesizer.Interfaces;
+using System;
 using System.Windows.Input;
 
 namespace NWaves.Synthesizer.ViewModels
@@ -9,16 +10,53 @@ namespace NWaves.Synthesizer.ViewModels
         private readonly ISynthesizerService _synthesizer;
         private readonly IKeyNoteMapperService _keyNoteMapper;
 
-        private string _note = string.Empty;
-        public string Note
+        private string _keys = string.Empty;
+        public string Keys
         {
-            get => _note;
+            get => _keys;
             set
             {
-                _note = value;
-                NotifyOfPropertyChange(() => Note);
+                _keys = value;
+                NotifyOfPropertyChange(() => Keys);
             }
         }
+
+        private int _octave = 3;
+        public int Octave
+        {
+            get => _octave;
+            set
+            {
+                _octave = value;
+                NotifyOfPropertyChange(() => Octave);
+            }
+        }
+
+        private float _volume = 0.5f;
+        public float Volume
+        {
+            get => (float)Math.Round(_volume, 1);
+            set
+            {
+                _volume = value;
+                _synthesizer.ChangeVolume(_volume);
+                NotifyOfPropertyChange(() => Volume);
+            }
+        }
+
+        private Instrument _sound;
+        public Instrument Sound
+        {
+            get => _sound;
+            set
+            {
+                _sound = value;
+                NotifyOfPropertyChange(() => Sound);
+                NotifyOfPropertyChange(() => SelectedInstrument);
+            }
+        }
+
+        public string SelectedInstrument => $"pack://application:,,,/Assets/{_sound}.png";
 
 
         public MainWindowViewModel(ISynthesizerService synthesizer, IKeyNoteMapperService keyNoteMapper)
@@ -31,12 +69,17 @@ namespace NWaves.Synthesizer.ViewModels
         {
             try
             {
-                var (note, octave) = _keyNoteMapper.Map(e.Key.ToString());
+                var key = e.Key.ToString();
+                if (key.Length > 1) key = key.Substring(1);
+
+                var (note, octaveDelta) = _keyNoteMapper.Map(key);
+
+                var octave = Octave + octaveDelta;
 
                 _synthesizer.PlayNote(note, octave);
 
-                Note = Note.Replace($"{note}{octave}", "").Trim();
-                Note += $" {note}{octave}";
+                Keys = Keys.Replace(key, "");
+                Keys += key;
             }
             catch { }
         }
@@ -45,13 +88,50 @@ namespace NWaves.Synthesizer.ViewModels
         {
             try
             {
-                var (note, octave) = _keyNoteMapper.Map(e.Key.ToString());
+                var key = e.Key.ToString();
+                if (key.Length > 1) key = key.Substring(1);
+
+                var (note, octaveDelta) = _keyNoteMapper.Map(key);
+
+                var octave = Octave + octaveDelta;
 
                 _synthesizer.StopNote(note, octave);
 
-                Note = Note.Replace($"{note}{octave}", "");
+                Keys = Keys.Replace(key, "");
             }
             catch { }
+        }
+
+        public void Organ()
+        {
+            Sound = Instrument.Organ;
+            _synthesizer.ChangeInstrument(Sound);
+        }
+
+        public void Guitar()
+        {
+            Sound = Instrument.Guitar;
+            _synthesizer.ChangeInstrument(Sound);
+        }
+
+        public void OctaveDown()
+        {
+            if (Octave > 0) Octave--;
+        }
+
+        public void OctaveUp()
+        {
+            if (Octave < 8) Octave++;
+        }
+
+        public void VolumeDown()
+        {
+            if (Volume >= 0.1f) Volume -= 0.1f;
+        }
+
+        public void VolumeUp()
+        {
+            Volume += 0.1f;
         }
     }
 }

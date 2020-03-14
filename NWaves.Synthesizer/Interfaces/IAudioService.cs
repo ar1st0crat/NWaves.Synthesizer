@@ -6,12 +6,14 @@ namespace NWaves.Synthesizer.Interfaces
 {
     public interface IAudioService : ISampleProvider, IDisposable
     {
-        void Play();
-        void Pause();
-        void Resume();
-        void Stop();
+        float Volume { get; set; }
 
-        void AddNote(string note, FadeInOutBuilder synthesizer);
-        void RemoveNote(string note);
+        void Play();
+        void Stop();
+        
+        void AddSound(string note, FadeInOutBuilder sound);
+        void RemoveSound(string note);
+
+        bool IsPlayingNote(string note);
     }
 }
