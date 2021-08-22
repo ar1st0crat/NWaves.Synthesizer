@@ -10,6 +10,7 @@
         mc:Ignorable="d"
         Title="NWaves.Synthesizer"
         Height="420" Width="800"
+        WindowState="Maximized"
         cal:Message.Attach="[Event KeyDown] = [Action OnKeyDown($eventArgs)];
                             [Event KeyUp] = [Action OnKeyUp($eventArgs)]">
     <Window.Background>
@@ -28,7 +29,7 @@
         
     </Window.Resources>
     
-    <StackPanel Orientation="Vertical">
+    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Margin="0,25,0,0">
@@ -46,7 +47,7 @@
                     Background="Transparent"
                     Foreground="White"
                     FontSize="14"/>
-            <TextBlock Width="50"/>
+            <TextBlock Width="40"/>
             <Button x:Name="VolumeDown"
                     Content=" &lt; "
                     BorderThickness="0"
@@ -56,6 +57,35 @@
             <TextBlock Text="Volume : " Foreground="White" FontSize="14" Margin="10,0,0,0"/>
             <TextBlock x:Name="Volume" Foreground="White" FontSize="14" Margin="0,0,10,0"/>
             <Button x:Name="VolumeUp"
+                    Content=" &gt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14"/>
+            <TextBlock Width="40"/>
+            <Button x:Name="FadeInDown"
+                    Content=" &lt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14" />
+            <TextBlock Text="Fade in (ms) : " Foreground="White" FontSize="14" Margin="10,0,0,0"/>
+            <TextBlock x:Name="FadeIn" Foreground="White" FontSize="14" Margin="0,0,10,0"/>
+            <Button x:Name="FadeInUp"
+                    Content=" &gt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14"/>
+            <Button x:Name="FadeOutDown"
+                    Content=" &lt; "
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Foreground="White"
+                    FontSize="14" />
+            <TextBlock Text="Fade out (ms) : " Foreground="White" FontSize="14" Margin="10,0,0,0"/>
+            <TextBlock x:Name="FadeOut" Foreground="White" FontSize="14" Margin="0,0,10,0"/>
+            <Button x:Name="FadeOutUp"
                     Content=" &gt; "
                     BorderThickness="0"
                     Background="Transparent"

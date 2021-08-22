@@ -1,5 +1,5 @@
 ﻿using NAudio.Wave;
-using NWaves.Synthesizer.Utils;
+using NWaves.Signals.Builders;
 using System;
 
 namespace NWaves.Synthesizer.Interfaces
@@ -13,7 +13,5 @@ namespace NWaves.Synthesizer.Interfaces
         
         void AddSound(string note, FadeInOutBuilder sound);
         void RemoveSound(string note);
-
-        bool IsPlayingNote(string note);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using NAudio.Wave;
+using NWaves.Signals.Builders;
 using NWaves.Synthesizer.Config;
 using NWaves.Synthesizer.Interfaces;
-using NWaves.Synthesizer.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +42,11 @@ namespace NWaves.Synthesizer.Services
 
             if (index < 0) return;
 
+            while (_sounds[index].FadeStarted)  // skip sounds that have already started fading
+            {
+                index = _notes.IndexOf(note, index + 1);
+            }
+
             _sounds[index].FadeOut();
         }
 
@@ -57,7 +62,7 @@ namespace NWaves.Synthesizer.Services
 
             for (var n = 0; n < sampleCount; n += channels)
             {
-                int index = _sounds.FindIndex(s => s.Finished);   // finished fading...
+                int index = _sounds.FindIndex(s => s.FadeFinished);   // finished fading...
 
                 if (index >= 0)
                 {
@@ -75,8 +80,6 @@ namespace NWaves.Synthesizer.Services
 
             return sampleCount;
         }
-
-        public bool IsPlayingNote(string note) => _notes.Contains(note);
 
         public void Play() => _waveOut?.Play();
 

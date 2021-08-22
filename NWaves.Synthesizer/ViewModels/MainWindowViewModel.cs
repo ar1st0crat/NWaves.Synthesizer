@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using NWaves.Synthesizer.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace NWaves.Synthesizer.ViewModels
@@ -9,6 +10,8 @@ namespace NWaves.Synthesizer.ViewModels
     {
         private readonly ISynthesizerService _synthesizer;
         private readonly IKeyNoteMapperService _keyNoteMapper;
+
+        private readonly HashSet<string> _currentNotes = new HashSet<string>();
 
         private string _keys = string.Empty;
         public string Keys
@@ -56,8 +59,27 @@ namespace NWaves.Synthesizer.ViewModels
             }
         }
 
-        public string SelectedInstrument => $"pack://application:,,,/Assets/{_sound}.png";
+        public float FadeIn
+        {
+            get => _synthesizer.SecondsFadeIn * 1000;
+            set
+            {
+                _synthesizer.SecondsFadeIn = value / 1000;
+                NotifyOfPropertyChange(() => FadeIn);
+            }
+        }
 
+        public float FadeOut
+        {
+            get => _synthesizer.SecondsFadeOut * 1000;
+            set
+            {
+                _synthesizer.SecondsFadeOut = value / 1000;
+                NotifyOfPropertyChange(() => FadeOut);
+            }
+        }
+
+        public string SelectedInstrument => $"pack://application:,,,/Assets/{_sound}.png";
 
         public MainWindowViewModel(ISynthesizerService synthesizer, IKeyNoteMapperService keyNoteMapper)
         {
@@ -76,7 +98,14 @@ namespace NWaves.Synthesizer.ViewModels
 
                 var octave = Octave + octaveDelta;
 
+                if (_currentNotes.Contains(note + octave))
+                {
+                    return;
+                }
+                 
                 _synthesizer.PlayNote(note, octave);
+
+                _currentNotes.Add(note + octave);
 
                 Keys = Keys.Replace(key, "");
                 Keys += key;
@@ -96,6 +125,8 @@ namespace NWaves.Synthesizer.ViewModels
                 var octave = Octave + octaveDelta;
 
                 _synthesizer.StopNote(note, octave);
+
+                _currentNotes.Remove(note + octave);
 
                 Keys = Keys.Replace(key, "");
             }
@@ -132,6 +163,26 @@ namespace NWaves.Synthesizer.ViewModels
         public void VolumeUp()
         {
             Volume += 0.1f;
+        }
+
+        public void FadeInDown()
+        {
+            if (FadeIn >= 100) FadeIn -= 100;
+        }
+
+        public void FadeInUp()
+        {
+            FadeIn += 100;
+        }
+
+        public void FadeOutDown()
+        {
+            if (FadeOut >= 100) FadeOut -= 100;
+        }
+
+        public void FadeOutUp()
+        {
+            FadeOut += 100;
         }
     }
 }

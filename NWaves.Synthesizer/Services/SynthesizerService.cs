@@ -1,7 +1,6 @@
 ﻿using NWaves.Signals.Builders;
 using NWaves.Synthesizer.Config;
 using NWaves.Synthesizer.Interfaces;
-using NWaves.Synthesizer.Utils;
 using NWaves.Utils;
 
 namespace NWaves.Synthesizer.Services
@@ -14,6 +13,9 @@ namespace NWaves.Synthesizer.Services
 
         private Instrument _instrument = Instrument.Organ;
 
+        public float SecondsFadeIn { get; set; } = 0.1f;
+        public float SecondsFadeOut { get; set; } = 0.9f;
+
         public SynthesizerService(IAudioService audioService, SynthesizerConfig config)
         {
             _config = config;
@@ -24,11 +26,6 @@ namespace NWaves.Synthesizer.Services
 
         public void PlayNote(string note, int octave)
         {
-            if (_audioService.IsPlayingNote(note + octave))
-            {
-                return;
-            }
-
             var freq = Scale.NoteToFreq(note, octave);
 
             FadeInOutBuilder sound;
@@ -41,7 +38,9 @@ namespace NWaves.Synthesizer.Services
                                         .SetParameter("freq", freq)
                                         .SetParameter("stretch", freq / _config.StretchFactor)
                                         .OfLength(_sampleRate * _config.Seconds)
-                                        .SampledAt(_sampleRate));
+                                        .SampledAt(_sampleRate))
+                                    .In(SecondsFadeIn)
+                                    .Out(SecondsFadeOut);
                     break;
                 default:
                     sound = new FadeInOutBuilder(
@@ -50,7 +49,9 @@ namespace NWaves.Synthesizer.Services
                                         .SetParameter("freq", freq)
                                         .SetAmplitudes(_config.Amplitudes)
                                         .OfLength(_sampleRate * _config.Seconds)
-                                        .SampledAt(_sampleRate));
+                                        .SampledAt(_sampleRate))
+                                    .In(SecondsFadeIn)
+                                    .Out(SecondsFadeOut);
                     break;
             }
 
