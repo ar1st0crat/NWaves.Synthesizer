@@ -52,29 +52,32 @@ namespace NWaves.Synthesizer.Services
 
         public int Read(float[] buffer, int offset, int sampleCount)
         {
-            var channels = WaveFormat.Channels;
-
             if (!_sounds.Any())
             {
                 Array.Clear(buffer, 0, buffer.Length);
                 return sampleCount;
             }
 
-            for (var n = 0; n < sampleCount; n += channels)
-            {
-                int index = _sounds.FindIndex(s => s.FadeFinished);   // finished fading...
+            var channels = WaveFormat.Channels;
 
-                if (index >= 0)
+            for (var n = offset; n < sampleCount; n += channels)
+            {
+                int index = _sounds.FindIndex(s => s.FadeFinished);   // first note that finished fading...
+                                                                      // (if we allowed fadeOutSeconds to be 0 then the logic here
+                                                                      // would depend on smth different than FadeFinished property)
+                while (index >= 0)
                 {
                     _sounds.RemoveAt(index);
                     _notes.RemoveAt(index);
+                    
+                    index = _sounds.FindIndex(s => s.FadeFinished);   // other notes (perhaps) that finished fading
                 }
 
                 var sample = _sounds.Any() ? _sounds.Select(s => s.NextSample()).Sum() * Volume : 0;
 
                 for (var i = 0; i < channels; i++)
                 {
-                    buffer[offset + n + i] = sample;
+                    buffer[n + i] = sample;
                 }
             }
 

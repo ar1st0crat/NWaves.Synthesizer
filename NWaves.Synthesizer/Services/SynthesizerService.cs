@@ -28,6 +28,11 @@ namespace NWaves.Synthesizer.Services
         {
             var freq = Scale.NoteToFreq(note, octave);
 
+            // if FadeOutSeconds == 0, then slightly increase this parameter for making AudioService logic simpler
+            // (see comments in AudioService.cs):
+
+            var secondsFadeOut = SecondsFadeOut > 0 ? SecondsFadeOut : 0.001f;
+
             FadeInOutBuilder sound;
 
             switch (_instrument)
@@ -40,7 +45,7 @@ namespace NWaves.Synthesizer.Services
                                         .OfLength(_sampleRate * _config.Seconds)
                                         .SampledAt(_sampleRate))
                                     .In(SecondsFadeIn)
-                                    .Out(SecondsFadeOut);
+                                    .Out(secondsFadeOut);
                     break;
                 default:
                     sound = new FadeInOutBuilder(
@@ -51,7 +56,7 @@ namespace NWaves.Synthesizer.Services
                                         .OfLength(_sampleRate * _config.Seconds)
                                         .SampledAt(_sampleRate))
                                     .In(SecondsFadeIn)
-                                    .Out(SecondsFadeOut);
+                                    .Out(secondsFadeOut);
                     break;
             }
 
