@@ -50,9 +50,9 @@ namespace NWaves.Synthesizer.Services
                 default:
                     sound = new FadeInOutBuilder(
                                     new PadSynthBuilder()
+                                        .SetAmplitudes(_config.Amplitudes)
                                         .SetParameter("fftsize", _config.FftSize)
                                         .SetParameter("freq", freq)
-                                        .SetAmplitudes(_config.Amplitudes)
                                         .OfLength(_sampleRate * _config.Seconds)
                                         .SampledAt(_sampleRate))
                                     .In(SecondsFadeIn)
